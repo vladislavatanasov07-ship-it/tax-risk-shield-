@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tax Risk Shield - Enterprise Client Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-8">
+    <div class="max-w-5xl mx-auto">
+        <header class="bg-slate-900 border border-slate-800 p-6 rounded-xl mb-8 flex justify-between items-center shadow-2xl">
+            <div>
+                <h1 class="text-2xl font-bold text-sky-400">Tax Risk Shield Enterprise</h1>
+                <p class="text-sm text-slate-400">Cross-Border Supply Chain & Tax Risk Intelligence Platform</p>
+            </div>
+            <span class="bg-emerald-950 text-emerald-400 text-xs px-3 py-1 rounded-full font-semibold border border-emerald-800">CLIENT PORTAL ACTIVE</span>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-slate-900 border border-slate-800 p-6 rounded-xl">
+                <h2 class="text-lg font-semibold text-slate-200 mb-2">1. Onboard New Tenant</h2>
+                <p class="text-xs text-slate-400 mb-4">Register your company to receive a secure enterprise API key.</p>
+                <form id="tenantForm" class="space-y-3">
+                    <input type="text" id="companyName" placeholder="Company Name" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm text-slate-200 focus:outline-none focus:border-sky-500">
+                    <input type="email" id="email" placeholder="Corporate Email" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm text-slate-200 focus:outline-none focus:border-sky-500">
+                    <button type="submit" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-semibold py-2.5 rounded-lg text-sm transition">Generate API Key</button>
+                </form>
+                <div id="tenantResult" class="mt-4 text-xs font-mono text-sky-300 break-all"></div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 p-6 rounded-xl flex flex-col justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold text-slate-200 mb-2">2. Run Compliance Modules</h2>
+                    <p class="text-xs text-slate-400 mb-4">Test VIES validation and carousel fraud detection using your API key.</p>
+                </div>
+                <div class="space-y-3">
+                    <input type="text" id="apiKeyInput" placeholder="Enter your API Key (x-api-key)" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm text-slate-200 focus:outline-none focus:border-sky-500">
+                    <div class="flex gap-2">
+                        <button onclick="runCheck('/api/v1/vies-check')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-sky-400 font-semibold py-2 rounded-lg text-xs transition border border-slate-700">VIES Check</button>
+                        <button onclick="runCheck('/api/v1/detect-carousel')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-red-400 font-semibold py-2 rounded-lg text-xs transition border border-slate-700">Detect Fraud</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-xl">
+            <h2 class="text-lg font-semibold text-slate-200 mb-2">API Execution Log</h2>
+            <pre id="outputLog" class="bg-slate-950 border border-slate-800 p-4 rounded-lg text-xs text-emerald-400 font-mono h-48 overflow-y-auto">// System ready for requests...</pre>
+        </div>
+    </div>
+
+    <script>
+        const BACKEND_URL = 'http://localhost:3000';
+
+        document.getElementById('tenantForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const companyName = document.getElementById('companyName').value;
+            const email = document.getElementById('email').value;
+
+            const res = await fetch(`${BACKEND_URL}/api/v1/tenants/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ companyName, email })
+            });
+            const text = await res.text();
+            document.getElementById('tenantResult').innerHTML = text;
+        });
+
+        async function runCheck(endpoint) {
+            const apiKey = document.getElementById('apiKeyInput').value;
+            const logBox = document.getElementById('outputLog');
+            logBox.innerText = 'Executing secure request...';
+
+            try {
+                const res = await fetch(`${BACKEND_URL}${endpoint}?apiKey=${apiKey}`);
+                const data = await res.json();
+                logBox.innerText = JSON.stringify(data, null, 2);
+            } catch (err) {
+                logBox.innerText = 'Error: ' + err.message;
+            }
+        }
+    </script>
+</body>
+</html>

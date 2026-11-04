@@ -1,0 +1,22 @@
+import neo4j from 'neo4j-driver';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const uri = process.env.NEO4J_URI || '';
+const user = process.env.NEO4J_USER || '';
+const password = process.env.NEO4J_PASSWORD || '';
+
+export const driver = neo4j.driver(uri, neo4j.auth.basic(user, password));
+
+export async function testConnection() {
+    try {
+        const session = driver.session();
+        const result = await session.run('RETURN 1 AS result');
+        console.log('Neo4j Aura Connected Successfully:', result.records[0].get('result'));
+        await session.close();
+    } catch (error) {
+        console.error('Failed to connect to Neo4j Aura:', error);
+    }
+}
+
