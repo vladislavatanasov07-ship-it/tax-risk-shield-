@@ -3,16 +3,21 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const uri = process.env.NEO4J_URI || '';
+let uri = process.env.NEO4J_URI || '';
 const user = process.env.NEO4J_USER || '';
 const password = process.env.NEO4J_PASSWORD || '';
 
-// Force direct connection and disable routing discovery to fix cloud environment errors
+// Automatically force direct bolt connection to completely avoid routing discovery errors in cloud hosting
+if (uri.startsWith('neo4j+s://')) {
+    uri = uri.replace('neo4j+s://', 'bolt+s://');
+} else if (uri.startsWith('neo4j://')) {
+    uri = uri.replace('neo4j://', 'bolt://');
+}
+
 export const driver = neo4j.driver(uri, neo4j.auth.basic(user, password), {
     encrypted: 'ENCRYPTION_ON',
     trust: 'TRUST_ALL_CERTIFICATES',
     disableLosslessIntegers: true,
-    maxConnectionPoolSize: 50,
 });
 
 export async function testConnection() {
@@ -25,3 +30,4 @@ export async function testConnection() {
         console.error('Failed to connect to Neo4j Aura:', error);
     }
 }
+
