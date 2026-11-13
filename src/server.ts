@@ -15,12 +15,17 @@ app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../public'));
 
-// Neo4j Aura Production Connection
-const NEO4J_URI = process.env.NEO4J_URI || 'neo4j+s://your-aura-instance.databases.neo4j.io';
+// Force direct bolt+s protocol to completely bypass cluster routing discovery
+let NEO4J_URI = process.env.NEO4J_URI || 'bolt+s://your-aura-instance.databases.neo4j.io';
+if (NEO4J_URI.startsWith('neo4j+s://')) {
+    NEO4J_URI = NEO4J_URI.replace('neo4j+s://', 'bolt+s://');
+} else if (NEO4J_URI.startsWith('neo4j://')) {
+    NEO4J_URI = NEO4J_URI.replace('neo4j://', 'bolt://');
+}
+
 const NEO4J_USER = process.env.NEO4J_USER || 'neo4j';
 const NEO4J_PASSWORD = process.env.NEO4J_PASSWORD || 'your-secure-password';
 
-// Clean driver initialization: secure URI handles encryption automatically without config conflicts
 const driver = neo4j.driver(NEO4J_URI, neo4j.auth.basic(NEO4J_USER, NEO4J_PASSWORD));
 
 interface AuthRequest extends Request {
