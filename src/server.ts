@@ -15,16 +15,12 @@ app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../public'));
 
-// Neo4j Aura Production Connection with Direct Encryption and Security Settings
+// Neo4j Aura Production Connection (Clean driver initialization without config conflicts)
 const NEO4J_URI = process.env.NEO4J_URI || 'neo4j+s://your-aura-instance.databases.neo4j.io';
 const NEO4J_USER = process.env.NEO4J_USER || 'neo4j';
 const NEO4J_PASSWORD = process.env.NEO4J_PASSWORD || 'your-secure-password';
 
-const driver = neo4j.driver(NEO4J_URI, neo4j.auth.basic(NEO4J_USER, NEO4J_PASSWORD), {
-    encrypted: 'ENCRYPTION_ON',
-    trust: 'TRUST_ALL_CERTIFICATES',
-    disableLosslessIntegers: true,
-});
+const driver = neo4j.driver(NEO4J_URI, neo4j.auth.basic(NEO4J_USER, NEO4J_PASSWORD));
 
 interface AuthRequest extends Request {
     tenant?: {
